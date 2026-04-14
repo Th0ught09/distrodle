@@ -1,0 +1,25 @@
+name: Deploy via SSH
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    if: github.repository == 'fedes1to/portfolio'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: SSH Remote Commands
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd /var/www/distrodle
+            git fetch origin main
+            git pull --ff-only origin main
