@@ -84,7 +84,7 @@ app.post('/api/guess', (req, res) => {
     const feedback = compareDistros(guess, target);
 
     // Persist what the player has already learned this round.
-    const hintFields = ['paid', 'initSystem', 'releaseType', 'parentDistro', 'packageManager', 'difficulty', 'yearReleased', 'desktopEnvironment', 'basedOn', 'architecture', 'category'];
+    const hintFields = ['paid', 'initSystem', 'releaseType', 'parentDistro', 'packageManager', 'difficulty', 'yearReleased', 'desktopEnvironment', 'popularity', 'architecture', 'category'];
     const newlyDiscovered = hintFields.filter(f => feedback[f] && feedback[f].status === 'correct');
     gameState.discoveredFields = [...new Set([...gameState.discoveredFields, ...newlyDiscovered])];
     
@@ -120,7 +120,7 @@ app.post('/api/guess', (req, res) => {
 });
 
 function generateNewHint(target) {
-    const hintFields = ['paid', 'initSystem', 'releaseType', 'parentDistro', 'packageManager', 'difficulty', 'yearReleased', 'desktopEnvironment', 'basedOn', 'architecture', 'category'];
+    const hintFields = ['paid', 'initSystem', 'releaseType', 'parentDistro', 'packageManager', 'difficulty', 'yearReleased', 'desktopEnvironment', 'popularity', 'architecture', 'category'];
 
     const availableHints = hintFields.filter(f => !gameState.discoveredFields.includes(f) && !gameState.revealedHints.includes(f));
     
@@ -184,9 +184,9 @@ function compareDistros(guess, target) {
             value: guess.desktopEnvironment,
             status: getStatus(guess.desktopEnvironment, target.desktopEnvironment)
         },
-        basedOn: {
-            value: guess.basedOn,
-            status: getBasedOnStatus(guess.basedOn, target.basedOn)
+        popularity: {
+            value: guess.popularity,
+            status: getPopularityStatus(guess.popularity, target.popularity)
         },
         architecture: {
             value: guess.architecture,
@@ -230,19 +230,6 @@ function getYearDirection(guess, target) {
     if (guess === target) return null;
     if (guess < target) return 'up'; // Target is newer (higher year)
     return 'down'; // Target is older (lower year)
-}
-
-function getBasedOnStatus(guess, target) {
-    if (guess === target) return 'correct';
-    // Check if they share the same base
-    if (guess === target || (guess && target && guess.toLowerCase() === target.toLowerCase())) {
-        return 'correct';
-    }
-    // Partial if one is based on the other
-    if (guess && target && (guess.includes(target) || target.includes(guess))) {
-        return 'partial';
-    }
-    return 'incorrect';
 }
 
 function getPopularityStatus(guess, target) {

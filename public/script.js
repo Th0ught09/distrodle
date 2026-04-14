@@ -356,7 +356,7 @@ function displayFeedback(feedback, matchedName) {
         { key: 'difficulty', label: 'Difficulty' },
         { key: 'yearReleased', label: 'Year' },
         { key: 'desktopEnvironment', label: 'Desktop' },
-        { key: 'basedOn', label: 'Based' },
+        { key: 'popularity', label: 'Popularity' },
         { key: 'architecture', label: 'Arch' },
         { key: 'category', label: 'Category' }
     ];
