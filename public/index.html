@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distrodle - Linux Distro Guessing Game</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Distrodle</h1>
+            <p>Guess the Linux Distribution</p>
+        </header>
+
+        <div id="game-info">
+            <div class="info-line">
+                <span class="prompt">$</span>
+                <span class="command">./guess --distro</span>
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <span class="legend-color correct"></span>
+                    <span>Correct</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color partial"></span>
+                    <span>Partial</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color incorrect"></span>
+                    <span>Incorrect</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="input-section">
+            <div class="input-wrapper">
+                <span class="input-prompt">&gt;</span>
+                <input 
+                    type="text" 
+                    id="guess-input" 
+                    placeholder="Enter distro name..." 
+                    list="distro-list"
+                    autocomplete="off"
+                    spellcheck="false"
+                >
+            </div>
+            <datalist id="distro-list"></datalist>
+            <div class="button-group">
+                <button id="guess-btn" class="btn">Guess</button>
+                <button id="new-game-btn" class="btn">New Game</button>
+            </div>
+        </div>
+
+        <div id="feedback-section">
+            <div id="feedback-header" class="visible">
+                <span>Distro</span>
+                <span>Paid</span>
+                <span>Init</span>
+                <span>Release</span>
+                <span>Parent</span>
+                <span>Pkg</span>
+                <span>Difficulty</span>
+                <span>Year</span>
+                <span>Desktop</span>
+                <span>Based</span>
+                <span>Arch</span>
+                <span>Category</span>
+            </div>
+            <div id="feedback-container"></div>
+        </div>
+
+        <div id="victory-modal" class="hidden">
+            <div class="modal-content">
+                <h2>Solved!</h2>
+                <p>You guessed the distro in</p>
+                <span id="guess-count">0</span>
+                <span class="tries-label">tries</span>
+                <button id="play-again-btn" class="btn">Play Again</button>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-line">
+                <span class="prompt">$</span>
+                <span class="command">cat CREDITS</span>
+            </div>
+            <div class="footer-content">
+                Inspired by Pokedle | <span id="total-distros">Loading...</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
