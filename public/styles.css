@@ -105,8 +105,61 @@ header p {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 0.75rem;
     font-size: 0.9rem;
+}
+
+.game-info-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+#options-panel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: nowrap;
+    padding: 0.2rem 0.35rem;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    background: transparent;
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.options-label {
+    color: var(--accent);
+    font-size: 0.64rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 700;
+}
+
+.option-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.28rem;
+    font-size: 0.7rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 0.1rem 0.22rem;
+    border-radius: 2px;
+    white-space: nowrap;
+}
+
+.option-item input[type="checkbox"] {
+    accent-color: var(--accent);
+    transform: scale(0.9);
+}
+
+.option-help-btn {
+    margin-left: 0.15rem;
+    padding: 0.3rem 0.45rem;
+    font-size: 0.64rem;
+    letter-spacing: 0.6px;
+    border-width: 1px;
 }
 
 .prompt {
@@ -380,6 +433,22 @@ header p {
     color: var(--text-secondary);
 }
 
+.instructions-content {
+    max-width: 620px;
+    text-align: left;
+}
+
+.instructions-list {
+    margin: 0 0 1.25rem 1.2rem;
+    color: var(--text-primary);
+    line-height: 1.55;
+    font-size: 0.85rem;
+}
+
+.instructions-list li + li {
+    margin-top: 0.35rem;
+}
+
 #guess-count {
     font-weight: bold;
     color: var(--accent);
@@ -462,6 +531,21 @@ footer {
     #game-info {
         padding: 1rem;
     }
+
+    .game-info-top {
+        align-items: flex-start;
+    }
+
+    #options-panel {
+        width: 100%;
+        margin-left: 0;
+        justify-content: flex-start;
+        overflow-x: auto;
+    }
+
+    .option-help-btn {
+        margin-left: 0;
+    }
     
     #input-section {
         padding: 1rem;
@@ -475,6 +559,7 @@ footer {
     
     .button-group {
         width: 100%;
+        flex-wrap: wrap;
     }
     
     .btn {

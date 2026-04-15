@@ -23,6 +23,11 @@ let newGameRequestSeq = 0;
 let isStartingNewGame = false;
 let currentRoundToken = 0;
 const CLIENT_ID_STORAGE_KEY = 'distrodleClientId';
+const OPTIONS_STORAGE_KEY = 'distrodleOptions';
+let gameOptions = {
+    includeVeryLow: false,
+    includeDiscontinued: false
+};
 
 // DOM elements
 const guessInput = document.getElementById('guess-input');
@@ -35,6 +40,59 @@ const victoryModal = document.getElementById('victory-modal');
 const guessCountElement = document.getElementById('guess-count');
 const playAgainBtn = document.getElementById('play-again-btn');
 const firstGuessHelp = document.getElementById('first-guess-help');
+const toggleVeryLow = document.getElementById('toggle-very-low');
+const toggleDiscontinued = document.getElementById('toggle-discontinued');
+const howToPlayBtn = document.getElementById('how-to-play-btn');
+const instructionsModal = document.getElementById('instructions-modal');
+const closeInstructionsBtn = document.getElementById('close-instructions-btn');
+
+function getOptionQuery() {
+    return `includeVeryLow=${gameOptions.includeVeryLow}&includeDiscontinued=${gameOptions.includeDiscontinued}`;
+}
+
+async function loadDistroList() {
+    const response = await fetch(`/api/distros?${getOptionQuery()}`);
+    distroList = await response.json();
+}
+
+function loadOptions() {
+    try {
+        const raw = localStorage.getItem(OPTIONS_STORAGE_KEY);
+        if (!raw) return;
+
+        const parsed = JSON.parse(raw);
+        gameOptions.includeVeryLow = parsed.includeVeryLow === true;
+        gameOptions.includeDiscontinued = parsed.includeDiscontinued === true;
+    } catch (error) {
+        console.warn('Failed to load options, using defaults:', error);
+    }
+}
+
+function saveOptions() {
+    localStorage.setItem(OPTIONS_STORAGE_KEY, JSON.stringify(gameOptions));
+}
+
+function renderOptions() {
+    if (toggleVeryLow) {
+        toggleVeryLow.checked = gameOptions.includeVeryLow;
+    }
+    if (toggleDiscontinued) {
+        toggleDiscontinued.checked = gameOptions.includeDiscontinued;
+    }
+}
+
+async function applyOptionsAndRestart() {
+    if (isStartingNewGame || isProcessing) return;
+
+    try {
+        await loadDistroList();
+        updateDistroList();
+        await startNewGame();
+    } catch (error) {
+        console.error('Error applying options:', error);
+        showToast('Failed to apply options', 'error');
+    }
+}
 
 function getClientId() {
     let clientId = localStorage.getItem(CLIENT_ID_STORAGE_KEY);
@@ -106,10 +164,11 @@ async function initGame() {
     try {
         loadStats();
         renderStats();
+        loadOptions();
+        renderOptions();
 
         // Load distro list for autocomplete
-        const response = await fetch('/api/distros');
-        distroList = await response.json();
+        await loadDistroList();
         
         // Populate datalist
         updateDistroList();
@@ -158,7 +217,7 @@ async function startNewGame() {
         newGameBtn.disabled = true;
         playAgainBtn.disabled = true;
 
-        const response = await fetch('/api/target', {
+        const response = await fetch(`/api/target?${getOptionQuery()}`, {
             headers: {
                 'x-distrodle-client-id': getClientId()
             }
@@ -583,6 +642,16 @@ function showVictory() {
     typeWriterEffect(victoryTitle, 'Solved!', 100);
 }
 
+function openInstructionsModal() {
+    if (!instructionsModal) return;
+    instructionsModal.classList.remove('hidden');
+}
+
+function closeInstructionsModal() {
+    if (!instructionsModal) return;
+    instructionsModal.classList.add('hidden');
+}
+
 // Confetti effect
 function createConfetti() {
     const colors = ['#4a9eff', '#4ade80', '#facc15'];
@@ -669,9 +738,33 @@ guessInput.addEventListener('blur', () => {
     distroListElement.innerHTML = '';
 });
 
+if (toggleVeryLow) {
+    toggleVeryLow.addEventListener('change', async () => {
+        gameOptions.includeVeryLow = toggleVeryLow.checked;
+        saveOptions();
+        await applyOptionsAndRestart();
+    });
+}
+
+if (toggleDiscontinued) {
+    toggleDiscontinued.addEventListener('change', async () => {
+        gameOptions.includeDiscontinued = toggleDiscontinued.checked;
+        saveOptions();
+        await applyOptionsAndRestart();
+    });
+}
+
 newGameBtn.addEventListener('click', startNewGame);
 
 playAgainBtn.addEventListener('click', startNewGame);
+
+if (howToPlayBtn) {
+    howToPlayBtn.addEventListener('click', openInstructionsModal);
+}
+
+if (closeInstructionsBtn) {
+    closeInstructionsBtn.addEventListener('click', closeInstructionsModal);
+}
 
 // Close modal when clicking outside
 victoryModal.addEventListener('click', (e) => {
@@ -680,10 +773,24 @@ victoryModal.addEventListener('click', (e) => {
     }
 });
 
+if (instructionsModal) {
+    instructionsModal.addEventListener('click', (e) => {
+        if (e.target === instructionsModal) {
+            closeInstructionsModal();
+        }
+    });
+}
+
 // Start new game on Enter when victory modal is shown
 document.addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && !victoryModal.classList.contains('hidden')) {
         startNewGame();
+    }
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeInstructionsModal();
     }
 });
 

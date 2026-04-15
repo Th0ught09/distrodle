@@ -14,6 +14,33 @@ const distros = require('./data/distros.json');
 // Game state storage (in-memory, per client)
 const clientGames = new Map();
 
+function parseBooleanOption(value, fallback = false) {
+    if (value === undefined) return fallback;
+    if (typeof value !== 'string') return fallback;
+
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'true' || normalized === '1' || normalized === 'yes') return true;
+    if (normalized === 'false' || normalized === '0' || normalized === 'no') return false;
+    return fallback;
+}
+
+function getFilteredDistros(options = {}) {
+    const includeVeryLow = options.includeVeryLow === true;
+    const includeDiscontinued = options.includeDiscontinued === true;
+
+    return distros.filter((distro) => {
+        if (!includeVeryLow && distro.popularity === 'Very Low') {
+            return false;
+        }
+
+        if (!includeDiscontinued && distro.discontinued === 'Yes') {
+            return false;
+        }
+
+        return true;
+    });
+}
+
 function createInitialGameState() {
     return {
         currentTarget: null,
@@ -54,7 +81,11 @@ function getGameState(req) {
 
 // Get all distro names for autocomplete
 app.get('/api/distros', (req, res) => {
-    res.json(distros.map(d => d.name));
+    const includeVeryLow = parseBooleanOption(req.query.includeVeryLow, false);
+    const includeDiscontinued = parseBooleanOption(req.query.includeDiscontinued, false);
+    const filteredDistros = getFilteredDistros({ includeVeryLow, includeDiscontinued });
+
+    res.json(filteredDistros.map(d => d.name));
 });
 
 // Get random target distro
@@ -62,6 +93,14 @@ app.get('/api/target', (req, res) => {
     const gameState = getGameState(req);
     if (!gameState) {
         return res.status(400).json({ error: 'Missing client id' });
+    }
+
+    const includeVeryLow = parseBooleanOption(req.query.includeVeryLow, false);
+    const includeDiscontinued = parseBooleanOption(req.query.includeDiscontinued, false);
+    const availableDistros = getFilteredDistros({ includeVeryLow, includeDiscontinued });
+
+    if (availableDistros.length === 0) {
+        return res.status(400).json({ error: 'No distros available for selected filters' });
     }
 
     // If there was a current target that wasn't guessed, return it as the previous answer
@@ -82,7 +121,7 @@ app.get('/api/target', (req, res) => {
     }
     
     // Select new random target
-    const randomDistro = distros[Math.floor(Math.random() * distros.length)];
+    const randomDistro = availableDistros[Math.floor(Math.random() * availableDistros.length)];
     
     // Update game state
     gameState.currentTarget = randomDistro;

@@ -19,9 +19,23 @@
         </header>
 
         <div id="game-info">
-            <div class="info-line">
-                <span class="prompt">$</span>
-                <span class="command">./guess --distro</span>
+            <div class="game-info-top">
+                <div class="info-line">
+                    <span class="prompt">$</span>
+                    <span class="command">./guess --distro</span>
+                </div>
+                <div id="options-panel">
+                    <span class="options-label">Pool options:</span>
+                    <label class="option-item" for="toggle-very-low">
+                        <input type="checkbox" id="toggle-very-low" title="Include Very Low popularity distros">
+                        Very Low
+                    </label>
+                    <label class="option-item" for="toggle-discontinued">
+                        <input type="checkbox" id="toggle-discontinued" title="Include discontinued distros">
+                        Discontinued
+                    </label>
+                    <button id="how-to-play-btn" class="btn option-help-btn">How To Play</button>
+                </div>
             </div>
             <div class="legend">
                 <div class="legend-item">
@@ -84,6 +98,21 @@
                 <span id="guess-count">0</span>
                 <span class="tries-label">tries</span>
                 <button id="play-again-btn" class="btn">Play Again</button>
+            </div>
+        </div>
+
+        <div id="instructions-modal" class="hidden">
+            <div class="modal-content instructions-content">
+                <h2>How Distrodle Works</h2>
+                <p>Find the hidden Linux distro by comparing attributes from each guess.</p>
+                <ul class="instructions-list">
+                    <li>Type a distro name and click Guess.</li>
+                    <li>Green means exact match, yellow means close, red means different.</li>
+                    <li>For year, arrows show if the target is newer or older.</li>
+                    <li>Every 5 misses, you get one extra hint.</li>
+                    <li>Pool options let you include Very Low popularity and discontinued distros.</li>
+                </ul>
+                <button id="close-instructions-btn" class="btn">Close</button>
             </div>
         </div>
 
