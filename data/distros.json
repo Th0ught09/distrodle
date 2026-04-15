@@ -1024,8 +1024,8 @@
     "discontinued": "Yes"
   },
   {
-    "id" : "raspian"
-    "name": "Raspian",
+    "id": "raspian",
+    "name": "Raspberry Pi OS",
     "paid": false,
     "initSystem": "systemd",
     "releaseType": "Stable",
@@ -1038,5 +1038,5 @@
     "category": "Embedded",
     "popularity": "High",
     "discontinued": "No"
-    }
+  }
 ]
