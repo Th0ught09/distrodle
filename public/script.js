@@ -59,6 +59,18 @@ function applyOptionConstraints() {
 
 async function loadDistroList() {
     const response = await fetch(`/api/distros?${getOptionQuery()}`);
+    if (!response.ok) {
+        let message = 'Failed to load distro pool';
+        try {
+            const payload = await response.json();
+            if (payload && payload.error) {
+                message = payload.error;
+            }
+        } catch (error) {
+            // Keep fallback message when payload is not JSON.
+        }
+        throw new Error(message);
+    }
     distroList = await response.json();
 }
 
@@ -102,7 +114,7 @@ async function applyOptionsAndRestart() {
         await startNewGame();
     } catch (error) {
         console.error('Error applying options:', error);
-        showToast('Failed to apply options', 'error');
+        showToast(error.message || 'Failed to apply options', 'error');
     }
 }
 
@@ -673,6 +685,15 @@ function closeInstructionsModal() {
     instructionsModal.classList.add('hidden');
 }
 
+function toggleInstructionsModal() {
+    if (!instructionsModal) return;
+    if (instructionsModal.classList.contains('hidden')) {
+        openInstructionsModal();
+    } else {
+        closeInstructionsModal();
+    }
+}
+
 // Confetti effect
 function createConfetti() {
     const colors = ['#4a9eff', '#4ade80', '#facc15'];
@@ -784,7 +805,7 @@ newGameBtn.addEventListener('click', startNewGame);
 playAgainBtn.addEventListener('click', startNewGame);
 
 if (howToPlayBtn) {
-    howToPlayBtn.addEventListener('click', openInstructionsModal);
+    howToPlayBtn.addEventListener('click', toggleInstructionsModal);
 }
 
 if (closeInstructionsBtn) {
