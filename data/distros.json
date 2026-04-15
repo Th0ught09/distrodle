@@ -1022,5 +1022,21 @@
     "category": "Security, Penetration Testing",
     "popularity": "Low",
     "discontinued": "Yes"
-  }
+  },
+  {
+    "id" : "raspian"
+    "name": "Raspian",
+    "paid": false,
+    "initSystem": "systemd",
+    "releaseType": "Stable",
+    "parentDistro": "Debian",
+    "packageManager": "APT",
+    "difficulty": "Basic",
+    "yearReleased": 2012,
+    "desktopEnvironment": "PIXEL",
+    "architecture": "ARM",
+    "category": "Embedded",
+    "popularity": "High",
+    "discontinued": "No"
+    }
 ]
