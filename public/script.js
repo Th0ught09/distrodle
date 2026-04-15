@@ -22,6 +22,7 @@ let playerStats = {
 let newGameRequestSeq = 0;
 let isStartingNewGame = false;
 let currentRoundToken = 0;
+const CLIENT_ID_STORAGE_KEY = 'distrodleClientId';
 
 // DOM elements
 const guessInput = document.getElementById('guess-input');
@@ -34,6 +35,22 @@ const victoryModal = document.getElementById('victory-modal');
 const guessCountElement = document.getElementById('guess-count');
 const playAgainBtn = document.getElementById('play-again-btn');
 const firstGuessHelp = document.getElementById('first-guess-help');
+
+function getClientId() {
+    let clientId = localStorage.getItem(CLIENT_ID_STORAGE_KEY);
+    if (clientId && typeof clientId === 'string' && clientId.trim()) {
+        return clientId;
+    }
+
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        clientId = window.crypto.randomUUID();
+    } else {
+        clientId = `client-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    localStorage.setItem(CLIENT_ID_STORAGE_KEY, clientId);
+    return clientId;
+}
 
 // Sound effects (using Web Audio API)
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -141,7 +158,11 @@ async function startNewGame() {
         newGameBtn.disabled = true;
         playAgainBtn.disabled = true;
 
-        const response = await fetch('/api/target');
+        const response = await fetch('/api/target', {
+            headers: {
+                'x-distrodle-client-id': getClientId()
+            }
+        });
         const data = await response.json();
 
         // Ignore stale responses from older in-flight requests.
@@ -280,7 +301,8 @@ async function handleGuess() {
         const response = await fetch('/api/guess', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'x-distrodle-client-id': getClientId()
             },
             body: JSON.stringify({
                 guessName: matchedName,

@@ -11,20 +11,46 @@ app.use(express.static('public'));
 // Linux distro data
 const distros = require('./data/distros.json');
 
-// Game state storage (in-memory, per server instance)
-const gameState = {
-    currentTarget: null,
-    wasGuessed: false,
-    guessCount: 0,
-    missCount: 0,
-    revealedHints: [],
-    discoveredFields: [],
-    // Stats tracking
-    totalGames: 0,
-    totalWins: 0,
-    currentStreak: 0,
-    bestStreak: 0
-};
+// Game state storage (in-memory, per client)
+const clientGames = new Map();
+
+function createInitialGameState() {
+    return {
+        currentTarget: null,
+        wasGuessed: false,
+        guessCount: 0,
+        missCount: 0,
+        revealedHints: [],
+        discoveredFields: [],
+        // Stats tracking
+        totalGames: 0,
+        totalWins: 0,
+        currentStreak: 0,
+        bestStreak: 0
+    };
+}
+
+function getClientId(req) {
+    const headerId = req.get('x-distrodle-client-id');
+    if (!headerId || typeof headerId !== 'string' || !headerId.trim()) {
+        return null;
+    }
+
+    return headerId.trim();
+}
+
+function getGameState(req) {
+    const clientId = getClientId(req);
+    if (!clientId) {
+        return null;
+    }
+
+    if (!clientGames.has(clientId)) {
+        clientGames.set(clientId, createInitialGameState());
+    }
+
+    return clientGames.get(clientId);
+}
 
 // Get all distro names for autocomplete
 app.get('/api/distros', (req, res) => {
@@ -33,6 +59,11 @@ app.get('/api/distros', (req, res) => {
 
 // Get random target distro
 app.get('/api/target', (req, res) => {
+    const gameState = getGameState(req);
+    if (!gameState) {
+        return res.status(400).json({ error: 'Missing client id' });
+    }
+
     // If there was a current target that wasn't guessed, return it as the previous answer
     // This fixes the bug where previousTarget was always 2 games behind
     const previousAnswer = (!gameState.wasGuessed && gameState.currentTarget) ? {
@@ -80,6 +111,11 @@ app.get('/api/target', (req, res) => {
 
 // Check guess against target
 app.post('/api/guess', (req, res) => {
+    const gameState = getGameState(req);
+    if (!gameState) {
+        return res.status(400).json({ error: 'Missing client id' });
+    }
+
     const { guessName, targetId } = req.body;
 
     if (!gameState.currentTarget) {
@@ -141,7 +177,7 @@ app.post('/api/guess', (req, res) => {
     
     let newHint = null;
     if (targetMisses) {
-        newHint = generateNewHint(target);
+        newHint = generateNewHint(target, gameState);
     }
     
     res.json({
@@ -156,7 +192,7 @@ app.post('/api/guess', (req, res) => {
     });
 });
 
-function generateNewHint(target) {
+function generateNewHint(target, gameState) {
     const hintFields = ['paid', 'initSystem', 'releaseType', 'parentDistro', 'packageManager', 'difficulty', 'yearReleased', 'desktopEnvironment', 'popularity', 'architecture', 'category'];
 
     const availableHints = hintFields.filter(f => !gameState.discoveredFields.includes(f) && !gameState.revealedHints.includes(f));
